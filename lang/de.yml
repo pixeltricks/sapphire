@@ -18,7 +18,7 @@ de:
     DRAGFILESHERE: 'Dateien hier ablegen'
     DROPAREA: Dateiablage
     EDITALL: 'Alle Bearbeiten'
-    EDITANDORGANIZE: Bearbeiten
+    EDITANDORGANIZE: 'Bearbeiten'
     EDITINFO: 'Dateien bearbeiten'
     FILES: Dateien
     FROMCOMPUTER: 'Dateien auf Ihrem Computer auswählen'
@@ -250,6 +250,7 @@ de:
     NoRoles: 'Keine Rollen gefunden'
     PLURALNAME: Gruppen
     Parent: Elterngruppe
+    PLURALNAME: 'Gruppen'
     RolesAddEditLink: 'Rollen hinzufügen/editieren'
     SINGULARNAME: Gruppe
     Sort: Sortierreihenfolge
