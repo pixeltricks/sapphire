@@ -72,17 +72,14 @@ for the search form, override `[api:DataObject->getCustomSearchContext()]` on yo
 The results are shown in a tabular listing, powered by the `[GridField](/reference/grid-field)`,
 more specifically the `[api:GridFieldDataColumns]` component.
 It looks for a `[api:DataObject::$summary_fields]` static on your model class,
-where you can add or remove columns. To change the title, use `[api:DataObject::$field_labels]`.
+where you can add or remove columns, or change their title.
 
 	:::php
 	class Product extends DataObject {
 	   // ...
-	   static $field_labels = array(
-	      'Price' => 'Cost' // renames the column to "Cost"
-	   );
 	   static $summary_fields = array(
-	      'Name',
-	      'Price',
+	      'Name' => 'Name',
+	      'Price' => 'Cost', // renames the column to "Cost"
 	      // leaves out the 'ProductCode' field, removing the column
 	   );
 	}
@@ -155,10 +152,7 @@ Consider replacing it with a more powerful interface in case you have many recor
 Has-many and many-many relationships are usually handled via the `[GridField](/reference/grid-field)` class,
 more specifically the `[api:GridFieldAddExistingAutocompleter]` and `[api:GridFieldRelationDelete]` components.
 They provide a list/detail interface within a single record edited in your ModelAdmin.
-The `[GridField](/reference/grid-field)` docs also explain how to manage 
-extra relation fields on join tables through its detail forms.
-The autocompleter can also search attributes on relations,
-based on the search fields defined through `[api:DataObject::searchableFields()]`.
+The autocompleter may also spread its search to attributes of a has_many relation if this attribute is defined in DataObject::searchableFields().
 
 ## Permissions
 
@@ -237,8 +231,8 @@ For an introduction how to customize the CMS templates, see our [CMS Architectur
 
 ## Related
 
-* [GridField](../reference/grid-field): The UI component powering ModelAdmin
-* [Tutorial 5: Dataobject Relationship Management](../tutorials/5-dataobject-relationship-management)
+* [/reference/grid-field](GridField): The UI component powering ModelAdmin
+* [/tutorials/5-dataobject-relationship-management](Tutorial 5: Dataobject Relationship Management)
 *  `[api:SearchContext]`
 * [genericviews Module](http://silverstripe.org/generic-views-module)
 * [Presentation about ModelAdmin at SupperHappyDevHouse Wellington](http://www.slideshare.net/chillu/modeladmin-in-silverstripe-23)
