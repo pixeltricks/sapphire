@@ -23,8 +23,7 @@ class GridFieldAddExistingAutocompleterTest extends FunctionalTest {
 		$btns = $parser->getBySelector('.ss-gridfield #action_gridfield_relationfind');
 
 		$response = $this->post(
-			'GridFieldAddExistingAutocompleterTest_Controller/Form/field/testfield/search'
-				. '/?gridfield_relationsearch=Team 2',
+			'GridFieldAddExistingAutocompleterTest_Controller/Form/field/testfield/search/?gridfield_relationsearch=Team 2',
 			array(
 				(string)$btns[0]['name'] => 1
 			)
@@ -45,8 +44,7 @@ class GridFieldAddExistingAutocompleterTest extends FunctionalTest {
 		$this->assertEquals(1, count($result), "The relational filter did not work");
 
 		$response = $this->post(
-			'GridFieldAddExistingAutocompleterTest_Controller/Form/field/testfield/search'
-				. '/?gridfield_relationsearch=Unknown',
+			'GridFieldAddExistingAutocompleterTest_Controller/Form/field/testfield/search/?gridfield_relationsearch=Unknown',
 			array(
 				(string)$btns[0]['name'] => 1
 			)
@@ -56,7 +54,7 @@ class GridFieldAddExistingAutocompleterTest extends FunctionalTest {
 		$this->assertEmpty($result, 'The output is either an empty array or boolean FALSE');
 	}
 
-	public function testAdd() {
+	function testAdd() {
 		$this->logInWithPermission('ADMIN');
 		$team1 = $this->objFromFixture('GridFieldTest_Team', 'team1');
 		$team2 = $this->objFromFixture('GridFieldTest_Team', 'team2');
@@ -93,7 +91,7 @@ class GridFieldAddExistingAutocompleterTest_Controller extends Controller implem
 
 	protected $template = 'BlankPage';
 
-	public function Form() {
+	function Form() {
 		$player = DataObject::get('GridFieldTest_Player')->find('Email', 'player1@test.com');
 		$config = GridFieldConfig::create()->addComponents(
 			$relationComponent = new GridFieldAddExistingAutocompleter('before'),
