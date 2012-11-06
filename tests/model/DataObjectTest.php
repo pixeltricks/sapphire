@@ -767,8 +767,14 @@ class DataObjectTest extends SapphireTest {
 		$obj = new DataObjectTest_Fixture();
 		$this->assertEquals(
 			$obj->MyFieldWithDefault,
-			"Default Value",
-			"Defaults are populated for in-memory object from \$defaults array"
+			'Default Value',
+			'Defaults are populated for in-memory object from $defaults array'
+		);
+
+		$this->assertEquals(
+			$obj->MyFieldWithAltDefault,
+			'Default Value',
+			'Defaults are populated from overloaded populateDefaults() method'
 		);
 	}
 	
@@ -1208,18 +1214,25 @@ class DataObjectTest_Fixture extends DataObject implements TestOnly {
 		'Data' => 'Varchar',
 		'Duplicate' => 'Varchar',
 		'DbObject' => 'Varchar',
-		
-		// Field with default
-		'MyField' => 'Varchar',
-		
+
 		// Field types
-		"DateField" => "Date",
-		"DatetimeField" => "Datetime",
+		'DateField' => 'Date',
+		'DatetimeField' => 'Datetime',
+
+		'MyFieldWithDefault' => 'Varchar',
+		'MyFieldWithAltDefault' => 'Varchar'
 	);
 
 	static $defaults = array(
-		'MyFieldWithDefault' => 'Default Value', 
+		'MyFieldWithDefault' => 'Default Value',
 	);
+
+	public function populateDefaults() {
+		parent::populateDefaults();
+
+		$this->MyFieldWithAltDefault = 'Default Value';
+	}
+
 }
 
 class DataObjectTest_SubTeam extends DataObjectTest_Team implements TestOnly {
@@ -1311,6 +1324,7 @@ class DataObjectTest_TeamComment extends DataObject {
 	static $has_one = array(
 		'Team' => 'DataObjectTest_Team'
 	);
+
 }
 
 DataObjectTest_Team::add_extension('DataObjectTest_Team_Extension');
