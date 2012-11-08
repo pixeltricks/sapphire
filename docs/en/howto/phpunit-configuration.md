@@ -3,6 +3,37 @@
 This guide helps you to run [PHPUnit](http://phpunit.de) tests in your SilverStripe project.
 See "[Testing](/topics/testing)" for an overview on how to create unit tests.
 
+## Should I execute through "sake dev/tests" or "phpunit"?
+
+Short answer: Both are valid ways.
+
+The `sake` executable that comes with SilverStripe can trigger a customized
+"[api:TestRunner]" class that handles the PHPUnit configuration and output formatting.
+It's tyically invoked to run all tests through `sake dev/tests/all`,
+a single test with `sake dev/tests/MyTestClass`, or tests for a module with `sake dev/tests/module/mymodulename`.
+While the custom test runner a handy tool, its also more limited than using `phpunit` directly,
+particularly around formatting test output.
+
+The `phpunit` executable uses a SilverStripe bootstrapper to autoload classes, 
+but handles its own test class retrieval, output formatting and other configuration. 
+It can format output in common structured formats used by "continuous integration" servers.
+If you're using [phpUnderControl](http://phpundercontrol.org/) or a similar tool,
+you will most likely need the `--log-junit` and `--coverage-xml` flags that are not available through `sake`.
+
+All command-line arguments are documented on [phpunit.de](http://www.phpunit.de/manual/current/en/textui.html).
+phpunit
+## Usage of "" executable
+
+ * `phpunit`: Runs all tests in all folders
+ * `phpunit framework/tests/`: Run all tests of the framework module
+ * `phpunit framework/tests/filesystem`: Run all filesystem tests within the framework module
+ * `phpunit framework/tests/filesystem/FolderTest.php`: Run a single test
+ * `phpunit framework/tests '' flush=all`: Run tests with optional `$_GET` parameters (you need an empty second argument)
+
+Note that if you have installed PHPUnit through Composer rather than PEAR
+([instructions](/topics/installation/composer)), the binary will be placed
+in `vendor/bin/phpunit` instead of `phpunit`.
+
 ## Coverage reports
 
 PHPUnit can generate code coverage reports for you ([docs](http://www.phpunit.de/manual/current/en/code-coverage-analysis.html)):
