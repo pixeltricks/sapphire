@@ -497,6 +497,7 @@ en:
   TableListField:
     CSVEXPORT: 'Export to CSV'
     Print: Print
+    SELECT: 'Select:'
   TableListField_PageControls.ss:
     OF: of
   TimeField:
