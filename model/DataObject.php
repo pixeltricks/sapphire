@@ -2727,26 +2727,6 @@ class DataObject extends ViewableData implements DataObjectInterface, i18nEntity
 	}
 
 	/**
-	 * DataList::create("Table")->where("filter") is the same as singleton("Table")->instance_get("filter")
-	 *
-	 * @deprecated 3.0 Use DataList::create and DataList to do your querying
-	 *
-	 * @param string $filter A filter to be inserted into the WHERE clause.
-	 * @param string $sort A sort expression to be inserted into the ORDER BY clause.  If omitted, self::$default_sort
-	 *                     will be used.
-	 * @param string $join A single join clause.  This can be used for filtering, only 1 instance of each DataObject
-	 *                     will be returned.
-	 * @param string $limit A limit expression to be inserted into the LIMIT clause.
-	 * @param string $containerClass The container class to return the results in.
-	 *
-	 * @return mixed The objects matching the filter, in the class specified by $containerClass
-	 */
-	public function instance_get($filter = "", $sort = "", $join = "", $limit="", $containerClass = "DataObjectSet") {
-		Deprecation::notice('3.0', 'Use DataList::create and DataList to do your querying instead.');
-		return self::get($this->class, $filter, $sort, $join, $limit, $containerClass);
-	}
-
-	/**
 	 * Return the first item matching the given query.
 	 * All calls to get_one() are cached.
 	 *
