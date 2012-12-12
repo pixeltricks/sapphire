@@ -414,6 +414,7 @@ class DataListTest extends SapphireTest {
 	public function testSimpleFilterWithMultiple() {
 		$list = DataObjectTest_TeamComment::get();
 		$list = $list->filter('Name', array('Bob','Phil'));
+		$list = $list->sort('Name', 'ASC');
 		$this->assertEquals(2, $list->count());
 		$this->assertEquals('Bob', $list->first()->Name, 'First comment should be from Bob');
 		$this->assertEquals('Phil', $list->last()->Name, 'Last comment should be from Phil');
@@ -431,6 +432,7 @@ class DataListTest extends SapphireTest {
 	public function testFilterMultipleArray() {
 		$list = DataObjectTest_TeamComment::get();
 		$list = $list->filter(array('Name'=>'Bob', 'Comment'=>'This is a team comment by Bob'));
+		$list = $list->sort('Name', 'ASC');
 		$this->assertEquals(1, $list->count());
 		$this->assertEquals('Bob', $list->first()->Name, 'Only comment should be from Bob');
 	}
@@ -444,6 +446,7 @@ class DataListTest extends SapphireTest {
 	public function testFilterMultipleWithArrayFilter() {
 		$list = DataObjectTest_TeamComment::get();
 		$list = $list->filter(array('Name'=>array('Bob','Phil')));
+		$list = $list->sort('Name', 'ASC');
 		$this->assertEquals(2, $list->count(), 'There should be two comments');
 		$this->assertEquals('Bob', $list->first()->Name, 'First comment should be from Bob');
 		$this->assertEquals('Phil', $list->last()->Name, 'Last comment should be from Phil');
@@ -621,11 +624,11 @@ class DataListTest extends SapphireTest {
 	 */
 	public function testExcludeOnFilter() {
 		$list = DataObjectTest_TeamComment::get();
- 		$list = $list->filter('Comment', 'Phil is a unique guy, and comments on team2');
+		$list = $list->filter('Comment', 'Phil is a unique guy, and comments on team2');
 		$list = $list->exclude('Name', 'Bob');
 		
 		$this->assertContains(
-			  'WHERE ("DataObjectTest_TeamComment"."Comment" = '
+			'WHERE ("DataObjectTest_TeamComment"."Comment" = '
 			. '\'Phil is a unique guy, and comments on team2\') '
 			. 'AND (("DataObjectTest_TeamComment"."Name" != \'Bob\'))',
 			$list->sql());

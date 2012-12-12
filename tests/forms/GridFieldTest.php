@@ -472,17 +472,14 @@ class GridFieldTest_Team extends DataObject implements TestOnly {
 	);
 
 	static $many_many = array('Players' => 'GridFieldTest_Player');
-        
-        static $has_many = array('Cheerleaders' => 'GridFieldTest_Cheerleader');
-        
-        public function searchableFields() {
-            $searchableFields = array(
-                'Name',
-                'City',
-                'Cheerleaders.Name'
-            );
-            return $searchableFields;
-        }
+
+	static $has_many = array('Cheerleaders' => 'GridFieldTest_Cheerleader');
+	
+	static $searchable_fields = array(
+		'Name',
+		'City',
+		'Cheerleaders.Name'
+	);
 }
 
 class GridFieldTest_Player extends DataObject implements TestOnly {

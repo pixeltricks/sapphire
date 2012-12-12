@@ -422,7 +422,7 @@ abstract class SS_Database {
 		//Indexes specified as arrays cannot be checked with this line: (it flattens out the array)
 		if(!is_array($spec)) {
 			$spec = preg_replace('/\s*,\s*/', ',', $spec);
-        }
+		}
 
 		if(!isset($this->tableList[strtolower($table)])) $newTable = true;
 
@@ -884,6 +884,18 @@ abstract class SS_Database {
 	}
 
 	/**
+	 * Generate a WHERE clause for text matching.
+	 * 
+	 * @param String $field Quoted field name
+	 * @param String $value Escaped search. Can include percentage wildcards.
+	 * @param boolean $exact Exact matches or wildcard support.
+	 * @param boolean $negate Negate the clause.
+	 * @param boolean $caseSensitive Perform case sensitive search.
+	 * @return String SQL
+	 */
+	abstract public function comparisonClause($field, $value, $exact = false, $negate = false, $caseSensitive = false);
+
+	/**
 	 * function to return an SQL datetime expression that can be used with the adapter in use
 	 * used for querying a datetime in a certain format
 	 * @param string $date to be formated, can be either 'now', literal datetime like '1973-10-14 10:30:00' or
@@ -1130,7 +1142,7 @@ abstract class SS_Query implements Iterator {
 				$result .= "<tr>";
 				foreach($record as $k => $v) {
 					$result .= "<th>" . Convert::raw2xml($k) . "</th> ";
- 				}
+				}
 				$result .= "</tr> \n";
 			}
 
@@ -1207,7 +1219,7 @@ abstract class SS_Query implements Iterator {
 	 */
 	public function valid() {
 		if(!$this->queryHasBegun) $this->next();
-	 	return $this->currentRecord !== false;
+		return $this->currentRecord !== false;
 	}
 
 	/**

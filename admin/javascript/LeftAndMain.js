@@ -4,6 +4,7 @@ jQuery.noConflict();
  * File: LeftAndMain.js
  */
 (function($) {
+
 	// setup jquery.entwine
 	$.entwine.warningLevel = $.entwine.WARN_LEVEL_BESTPRACTISE;
 	$.entwine('ss', function($) {
@@ -102,6 +103,17 @@ jQuery.noConflict();
 			StateChangeCount: 0,
 			
 			/**
+			 * Options for the threeColumnCompressor layout algorithm.
+			 *
+			 * See LeftAndMain.Layout.js for description of these options.
+			 */
+			LayoutOptions: {
+				minContentWidth: 820,
+				minPreviewWidth: 400,
+				mode: 'content'
+			},
+
+			/**
 			 * Constructor: onmatch
 			 */
 			onadd: function() {
@@ -119,7 +131,7 @@ jQuery.noConflict();
 					this._super();
 					return;
 				}
-				
+
 				// Initialize layouts
 				this.redraw();
 
@@ -144,19 +156,78 @@ jQuery.noConflict();
 				onaftersubmitform: function(){ this.redraw(); }
 			},
 
+			/**
+			 * Ensure the user can see the requested section - restore the default view.
+			 */
+			'from .cms-menu-list li a': {
+				onclick: function() {
+					this.splitViewMode();
+				}
+			},
+
+			/**
+			 * Change the options of the threeColumnCompressor layout, and trigger layouting. You can provide any or
+			 * all options. The remaining options will not be changed.
+			 */
+			updateLayoutOptions: function(newSpec) {
+				var spec = this.getLayoutOptions();
+				$.extend(spec, newSpec);
+				this.redraw();
+			},
+
+			/**
+			 * Enable the split view - with content on the left and preview on the right.
+			 */
+			splitViewMode: function() {
+				this.updateLayoutOptions({
+					mode: 'split'
+				});
+				this.redraw();
+			},
+
+			/**
+			 * Content only.
+			 */
+			contentViewMode: function() {
+				this.updateLayoutOptions({
+					mode: 'content'
+				});
+				this.redraw();
+			},
+
+			/**
+			 * Preview only.
+			 */
+			previewMode: function() {
+				this.updateLayoutOptions({
+					mode: 'preview'
+				});
+				this.redraw();
+			},
+
 			redraw: function() {
 				if(window.debug) console.log('redraw', this.attr('class'), this.get(0));
 
-				// Move from inner to outer layouts. Some of the elements might not exist.
-				// Not all edit forms are layouted, so qualify by their data value.
+				// Reset the algorithm.
+				this.data('jlayout', jLayout.threeColumnCompressor(
+					{
+						menu: this.children('.cms-menu'),
+						content: this.children('.cms-content'),
+						preview: this.children('.cms-preview')
+					},
+					this.getLayoutOptions()
+				));
+				
+				// Trigger layout algorithm once at the top. This also lays out children - we move from outside to
+				// inside, resizing to fit the parent.
+				this.layout();
 
-				this.layout({resize: false});
-				this.find('.cms-panel-layout').redraw(); 
-				this.find('.cms-content-fields[data-layout-type]').redraw(); 
-				this.find('.cms-edit-form[data-layout-type]').redraw(); 
+				// Redraw on all the children that need it
+				this.find('.cms-panel-layout').redraw();
+				this.find('.cms-content-fields[data-layout-type]').redraw();
+				this.find('.cms-edit-form[data-layout-type]').redraw();
 				this.find('.cms-preview').redraw();
 				this.find('.cms-content').redraw();
-				this.layout({resize: false});
 			},
 
 			/**
@@ -230,7 +301,7 @@ jQuery.noConflict();
 			 */
 			submitForm: function(form, button, callback, ajaxOptions) {
 				var self = this;
-		  
+		
 				// look for save button
 				if(!button) button = this.find('.Actions :submit[name=action_save]');
 				// default to first button if none given - simulates browser behaviour
@@ -418,8 +489,9 @@ jQuery.noConflict();
 					
 					// Set loading state and store element state
 					var origStyle = contentEl.attr('style');
-					var origVisible = contentEl.is(':visible');
-					var layoutClasses = ['east', 'west', 'center', 'north', 'south'];
+					var origParent = contentEl.parent();
+					var origParentLayoutApplied = (typeof origParent.data('jlayout')!=='undefined');
+					var layoutClasses = ['east', 'west', 'center', 'north', 'south', 'column-hidden'];
 					var elemClasses = contentEl.attr('class');
 					var origLayoutClasses = [];
 					if(elemClasses) {
@@ -433,7 +505,6 @@ jQuery.noConflict();
 						.removeClass(layoutClasses.join(' '))
 						.addClass(origLayoutClasses.join(' '));
 					if(origStyle) newContentEl.attr('style', origStyle);
-					newContentEl.css('visibility', 'hidden');
 
 					// Allow injection of inline styles, as they're not allowed in the document body.
 					// Not handling this through jQuery.ondemand to avoid parsing the DOM twice.
@@ -443,8 +514,12 @@ jQuery.noConflict();
 					// Replace panel completely (we need to override the "layout" attribute, so can't replace the child instead)
 					contentEl.replaceWith(newContentEl);
 
-					// Unset loading and restore element state (to avoid breaking existing panel visibility, e.g. with preview expanded)
-					if(origVisible) newContentEl.css('visibility', 'visible');
+					// Force jlayout to rebuild internal hierarchy to point to the new elements.
+					// This is only necessary for elements that are at least 3 levels deep. 2nd level elements will
+					// be taken care of when we lay out the top level element (.cms-container).
+					if (!origParent.is('.cms-container') && origParentLayoutApplied) {
+						origParent.layout();
+					}
 				});
 
 				// Re-init tabs (in case the form tag itself is a tabset)
@@ -504,7 +579,22 @@ jQuery.noConflict();
 					if($(el).data('ignoreTabState')) return; // allow opt-out
 					activeTabs.push({id:id, active:$(el).tabs('option', 'active')});
 				});
-				if(activeTabs) window.sessionStorage.setItem('tabs-' + url, JSON.stringify(activeTabs));
+
+				if(activeTabs) {
+					var tabsUrl = 'tabs-' + url;
+					try {
+						window.sessionStorage.setItem(tabsUrl, JSON.stringify(activeTabs));
+					} catch(err) {
+						if (err.code === DOMException.QUOTA_EXCEEDED_ERR && window.sessionStorage.length === 0) {
+							// If this fails we ignore the error as the only issue is that it 
+							// does not remember the tab state.
+							// This is a Safari bug which happens when private browsing is enabled.
+							return;
+						} else {
+							throw err;
+						}
+					}
+				}
 			},
 
 			/**
@@ -785,8 +875,6 @@ jQuery.noConflict();
 		$(".cms-panel-layout").entwine({
 			redraw: function() {
 				if(window.debug) console.log('redraw', this.attr('class'), this.get(0));
-
-				this.layout({resize: false});
 			}
 		});
 	
@@ -930,14 +1018,8 @@ jQuery.noConflict();
 				if(!this.data('uiTabs')) this.tabs({
 					active: (activeTab.index() != -1) ? activeTab.index() : 0,
 					beforeLoad: function(e, ui) {
-						// Overwrite ajax loading to use CMS logic instead
-						var makeAbs = $.path.makeUrlAbsolute,
-							baseUrl = $('base').attr('href'),
-							isSame = (makeAbs(ui.ajaxSettings.url, baseUrl) == makeAbs(document.location.href));
-
-						if(!isSame) $('.cms-container').loadPanel(ui.ajaxSettings.url);
-						$(this).tabs('select', ui.tab.index());
-
+						// Disable automatic ajax loading of tabs without matching DOM elements, 
+						// determining if the current URL differs from the tab URL is too error prone.
 						return false;
 					},
 					activate: function(e, ui) {
@@ -958,6 +1040,7 @@ jQuery.noConflict();
 			 */
 			rewriteHashlinks: function() {
 				$(this).find('ul a').each(function() {
+					if (!$(this).attr('href')) return;
 					var matches = $(this).attr('href').match(/#.*/);
 					if(!matches) return;
 					$(this).attr('href', document.location.href.replace(/#.*/, '') + matches[0]);

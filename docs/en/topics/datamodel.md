@@ -260,6 +260,22 @@ use case could be when you want to find all the members that does not exist in a
 	// ... Finding all members that does not belong to $group.
 	$otherMembers = Member::get()->subtract($group->Members());
 
+### Limit
+
+You can limit the amount of records returned in a DataList by using the `limit()` method.
+	
+	:::php
+	// Returning the first 5 members, sorted alphabetically by Surname
+	$members = Member::get()->sort('Surname')->limit(5);
+	
+`limit()` accepts two arguments, the first being the amount of results you want returned, with an optional second
+parameter to specify the offset, which allows you to tell the system where to start getting the results from. The
+offset, if not provided as an argument, will default to 0.
+
+	:::php
+	// Return 5 members starting from the 5th result
+	$members = Member::get()->sort('Surname')->limit(5, 4);
+
 ### Raw SQL options for advanced users
 
 Occasionally, the system described above won't let you do exactly what you need to do.  In these situations, we have 
@@ -553,12 +569,24 @@ See `[api:DataObject::$has_many]` for more info on the described relations.
 	
 	  // can be accessed by $myTeam->ActivePlayers()
 	  public function ActivePlayers() {
-	    return $this->Players("Status='Active'");
+	    return $this->Players()->filter('Status', 'Active');
 	  }
 	}
 
 Note: Adding new records to a filtered `RelationList` like in the example above doesn't automatically set the 
 filtered criteria on the added record.
+
+### Relations on Unsaved Objects
+
+You can also set *has_many* and *many_many* relations before the `DataObject` is saved. This behaviour uses the
+`[api:UnsavedRelationList]` and converts it into the correct `RelationList` when saving the `DataObject` for the
+first time.
+
+This unsaved lists will also recursively save any unsaved objects that they contain.
+
+As these lists are not backed by the database, most of the filtering methods on `DataList` cannot be used on a
+list of this type. As such, an `UnsavedRelationList` should only be used for setting a relation before saving an
+object, not for displaying the objects contained in the relation.
 
 ## Validation and Constraints
 

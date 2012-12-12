@@ -106,9 +106,9 @@ class RSSFeed extends ViewableData {
 	 *                         every time the representation does
 	 */
 	public function __construct(SS_List $entries, $link, $title,
-											 $description = null, $titleField = "Title",
-											 $descriptionField = "Content", $authorField = null,
-											 $lastModified = null, $etag = null) {
+											$description = null, $titleField = "Title",
+											$descriptionField = "Content", $authorField = null,
+											$lastModified = null, $etag = null) {
 		$this->entries = $entries;
 		$this->link = $link;
 		$this->description = $description;
@@ -188,18 +188,19 @@ class RSSFeed extends ViewableData {
 	public function outputToBrowser() {
 		$prevState = SSViewer::get_source_file_comments();
 		SSViewer::set_source_file_comments(false);
+		$response = Controller::curr()->getResponse();
 
 		if(is_int($this->lastModified)) {
 			HTTP::register_modification_timestamp($this->lastModified);
-			header('Last-Modified: ' . gmdate("D, d M Y H:i:s", $this->lastModified) . ' GMT');
+			$response->addHeader('Last-Modified', gmdate("D, d M Y H:i:s", $this->lastModified) . ' GMT');
 		}
 		if(!empty($this->etag)) {
 			HTTP::register_etag($this->etag);
 		}
 
 		if(!headers_sent()) {
-			HTTP::add_cache_headers();
-			header("Content-type: text/xml");
+			HTTP::add_cache_headers($response);
+			$response->addHeader('Content-Type', 'text/xml');
 		}
 
 		SSViewer::set_source_file_comments($prevState);
@@ -269,7 +270,7 @@ class RSSFeed_Entry extends ViewableData {
 	 * Create a new RSSFeed entry.
 	 */
 	public function __construct($entry, $titleField, $descriptionField,
-											 $authorField) {
+											$authorField) {
 		$this->failover = $entry;
 		$this->titleField = $titleField;
 		$this->descriptionField = $descriptionField;

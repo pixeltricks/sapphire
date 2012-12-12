@@ -135,9 +135,9 @@ class GDBackend extends Object implements Image_Backend {
 	 * @todo This method isn't very efficent
 	 */
 	public function fittedResize($width, $height) {
-	    $gd = $this->resizeByHeight($height);
-	    if($gd->width > $width) $gd = $gd->resizeByWidth($width);
-	    return $gd;
+		$gd = $this->resizeByHeight($height);
+		if($gd->width > $width) $gd = $gd->resizeByWidth($width);
+		return $gd;
 	}
 	
 	/**
@@ -199,9 +199,9 @@ class GDBackend extends Object implements Image_Backend {
 		if(!$this->gd) return;
 		
 		if(function_exists("imagerotate")) {
-		    $newGD = imagerotate($this->gd, $angle,0);
+			$newGD = imagerotate($this->gd, $angle,0);
 		} else {
-		    //imagerotate is not included in PHP included in Ubuntu
+			//imagerotate is not included in PHP included in Ubuntu
 			$newGD = $this->rotatePixelByPixel($angle);	
 		}
 		$output = clone $this;
@@ -210,45 +210,45 @@ class GDBackend extends Object implements Image_Backend {
 	}
 	
 	/**
-     * Rotates image by given angle. It's slow because makes it pixel by pixel rather than
-     * using built-in function. Used when imagerotate function is not available(i.e. Ubuntu)
-     * 
-     * @param angle 
-     *
-     * @return GD 
-    */ 
+	 * Rotates image by given angle. It's slow because makes it pixel by pixel rather than
+	 * using built-in function. Used when imagerotate function is not available(i.e. Ubuntu)
+	 * 
+	 * @param angle 
+	 *
+	 * @return GD 
+	*/ 
 	
-    public function rotatePixelByPixel($angle) {
-        $sourceWidth = imagesx($this->gd);
-        $sourceHeight = imagesy($this->gd);
-        if ($angle == 180) {
-            $destWidth = $sourceWidth;
-            $destHeight = $sourceHeight;
-        } else {
-            $destWidth = $sourceHeight;
-            $destHeight = $sourceWidth;
-        }
-        $rotate=imagecreatetruecolor($destWidth,$destHeight);
-        imagealphablending($rotate, false);
-        for ($x = 0; $x < ($sourceWidth); $x++) {
-            for ($y = 0; $y < ($sourceHeight); $y++) {
-                $color = imagecolorat($this->gd, $x, $y);
-                switch ($angle) {
-                    case 90:
-                        imagesetpixel($rotate, $y, $destHeight - $x - 1, $color);
-                    break;
-                    case 180:
-                        imagesetpixel($rotate, $destWidth - $x - 1, $destHeight - $y - 1, $color);
-                    break;
-                    case 270:                    
-                        imagesetpixel($rotate, $destWidth - $y - 1, $x, $color);
-                    break;
-                    default: $rotate = $this->gd;
-                };
-            }
-        }
-        return $rotate;
-    }
+	public function rotatePixelByPixel($angle) {
+		$sourceWidth = imagesx($this->gd);
+		$sourceHeight = imagesy($this->gd);
+		if ($angle == 180) {
+			$destWidth = $sourceWidth;
+			$destHeight = $sourceHeight;
+		} else {
+			$destWidth = $sourceHeight;
+			$destHeight = $sourceWidth;
+		}
+		$rotate=imagecreatetruecolor($destWidth,$destHeight);
+		imagealphablending($rotate, false);
+		for ($x = 0; $x < ($sourceWidth); $x++) {
+			for ($y = 0; $y < ($sourceHeight); $y++) {
+				$color = imagecolorat($this->gd, $x, $y);
+				switch ($angle) {
+					case 90:
+						imagesetpixel($rotate, $y, $destHeight - $x - 1, $color);
+					break;
+					case 180:
+						imagesetpixel($rotate, $destWidth - $x - 1, $destHeight - $y - 1, $color);
+					break;
+					case 270:
+						imagesetpixel($rotate, $destWidth - $y - 1, $x, $color);
+					break;
+					default: $rotate = $this->gd;
+				};
+			}
+		}
+		return $rotate;
+	}
 	
 	
 	/**
@@ -271,7 +271,7 @@ class GDBackend extends Object implements Image_Backend {
 		return $output;
 	}
 	
-    /**
+	/**
 	 * Method return width of image.
 	 *
 	 * @return integer width.
@@ -334,9 +334,9 @@ class GDBackend extends Object implements Image_Backend {
 	/**
 	 * Resize to fit fully within the given box, without resizing.  Extra space left around
 	 * the image will be padded with the background color.
-     * @param width
-     * @param height
-     * @param backgroundColour
+	 * @param width
+	 * @param height
+	 * @param backgroundColour
 	 */
 	public function paddedResize($width, $height, $backgroundColor = "FFFFFF") {
 		if(!$this->gd) return;
@@ -403,6 +403,10 @@ class GDBackend extends Object implements Image_Backend {
 		$height = $this->height;
 		$newGD = imagecreatetruecolor($this->width, $this->height);
 		
+		// Preserves transparency between images
+		imagealphablending($newGD, false);
+		imagesavealpha($newGD, true);
+		
 		$rt = $rv + $bv + $gv;
 		$rr = ($rv == 0) ? 0 : 1/($rt/$rv);
 		$br = ($bv == 0) ? 0 : 1/($rt/$bv);
@@ -412,7 +416,7 @@ class GDBackend extends Object implements Image_Backend {
 				$pxrgb = imagecolorat($this->gd, $dx, $dy);
 				$heightgb = ImageColorsforIndex($this->gd, $pxrgb);
 				$newcol = ($rr*$heightgb['red']) + ($br*$heightgb['blue']) + ($gr*$heightgb['green']);
-				$setcol = ImageColorAllocate($newGD, $newcol, $newcol, $newcol);
+				$setcol = ImageColorAllocateAlpha($newGD, $newcol, $newcol, $newcol, $heightgb['alpha']);
 				imagesetpixel($newGD, $dx, $dy, $setcol);
 			}
 		}
@@ -437,16 +441,16 @@ class GDBackend extends Object implements Image_Backend {
 
 			$ext = strtolower(substr($filename, strrpos($filename,'.')+1));
 			if(!isset($type)) switch($ext) {
-				case "gif": $type = 1; break;
-				case "jpeg": case "jpg": case "jpe": $type = 2; break;
-				default: $type = 3; break;
+				case "gif": $type = IMAGETYPE_GIF; break;
+				case "jpeg": case "jpg": case "jpe": $type = IMAGETYPE_JPEG; break;
+				default: $type = IMAGETYPE_PNG; break;
 			}
 			
 			// if the extension does not exist, the file will not be created!
 			
 			switch($type) {
-				case 1: imagegif($this->gd, $filename); break;
-				case 2: imagejpeg($this->gd, $filename, $this->quality); break;
+				case IMAGETYPE_GIF: imagegif($this->gd, $filename); break;
+				case IMAGETYPE_JPEG: imagejpeg($this->gd, $filename, $this->quality); break;
 				
 				// case 3, and everything else
 				default: 
@@ -459,4 +463,17 @@ class GDBackend extends Object implements Image_Backend {
 	}
 	
 }
-class_alias("GDBackend", "GD");
+
+/**
+ * Backwards compatibility
+ */
+class GD extends GDBackend {
+	public static function set_default_quality($quality) {
+		Deprecation::notice(
+			'3.1', 
+			'GDBackend::set_default_quality instead',
+			Deprecation::SCOPE_CLASS
+		);
+		GDBackend::set_default_quality($quality);
+	}	
+}
